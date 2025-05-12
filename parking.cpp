@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
+
 using namespace std;
 
 int tryal = 0;
@@ -8,9 +10,9 @@ struct date{
     int day, month, year;
 };
 
-struct attendant{
+struct attendant_info{
     string name;
-    long int attendant_id, contact_info;
+    int attendant_id, contact_info;
 };
 
 struct vehicle_owner {
@@ -28,6 +30,7 @@ struct transaction {
     
 };
 
+ vector <attendant_info> attendant; 
 
 void err()
 {
@@ -88,8 +91,15 @@ void exit_program() {
 void attendant_op()
 {
     int choice2 = option2();
+    string name;
+    int attendant_id, contact_info;
+
     switch (choice2)
     {
+        case 1:
+        cout << "Enter name: ";
+        cin >> name;
+        break;
 
     default:
         break;
