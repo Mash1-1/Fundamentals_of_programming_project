@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
 
 using namespace std;
 
@@ -13,7 +12,7 @@ struct date
 
 struct attendant_info
 {
-    string name;
+    string name, email, password;
     int attendant_id, contact_info;
 };
 
@@ -34,7 +33,7 @@ struct transaction
 {
 };
 
-vector<attendant_info> attendant;
+fstream file;
 
 void err()
 {
@@ -91,7 +90,7 @@ b:
     return choice;
 };
 
-bool search();
+bool search(string);
 
 void exit_program()
 {
@@ -99,24 +98,23 @@ void exit_program()
     exit(0);
 };
 
-void register_attendant()
-{
-    cout << "Registered";
-};
-void sign_in()
-{
-    cout << "Enter name and ID";
-};
+void register_attendant();
+void sign_in();
 
 void attendant_op();
 
 void vehicle_owner_op() {
     /*
-    enterinr or exiting checker
+    prompt user: entering or exiting checker
     file: entered vehicles / exited vehicles
-
+    time tracker for both enter and exit
+    if entering goto entering_vehicle()
+    else exiting goto exiting_vehicles()
     */
 };
+int attendant_id_generate();
+void entering_vehicle();
+void exiting_vehicles();
 
 int main()
 {
@@ -151,14 +149,21 @@ void attendant_op()
     }
 };
 
-bool search()
-{
+void entering_vehicle() {
+
+};
+
+void exiting_vehicles() {
+
+};
+
+bool search(string email) {
     /*
     search for attendant (by email)) and vehicle owner
     */
 };
 
-void id_checker(){
+void id_checker() {
     /*search attendant's ID and password */
 };
 
@@ -166,30 +171,106 @@ void sign_in() {
     /*
         input: email
         function: read info from file and check if email existed
-            if search():input attendant_Id, password 
+            if search():input attendant_Id, password
                     if id_checker(): function attendant_action()
                     else: print wrong pass and renter
             else: print error message and goto option2()(with some modefication)
     */
 };
 
-void attendant_action(){
-    /*summerry:trasaction history
+void attendant_action() {
+    /*summery:trasaction history
                 (ownwner info / feedback and rating)
                 display parking slot info(available, reserved, occupied, expired(passed the time limit)) slots
                 display entry and exit time
                 display price
-                search for vehicle owner(by ID, vehicle name, type) 
+                search for vehicle owner(by ID, vehicle name, type)
     */
 };
 
-void register_attendant() {
-    /*
-        input: name, email;
-        generate ID;
-        search for attendant using search() 
-            if search print "acount already existed, pls sign in" goto sign_in()
-            else create password and confirmation
-            print successfully registered
-    */
+void register_attendant()
+{
+    attendant_info att;
+    string email, pass1, pass2;
+    ofstream file("attendant_file.txt", ios::app);
+    if (!file)
+    {
+        cout << "Error opening file!" << endl;
+        exit(1);
+    }
+a:
+    cout << "Enter email: ";
+    cin >> email;
+    if (search(email))
+    {
+        int c = 0;
+    b:
+        cout << "Account with this email already exist, Do you want to sign in ? \n1. Yes \n2. No \nYour choice: ";
+        cin >> c;
+        if (c == 1)
+        {
+            sign_in();
+        }
+        else if (c == 2)
+        {
+            goto a;
+        }
+        else
+        {
+            cout << "Invalid input: Please enter a valid input !!!";
+            goto b;
+        }
+    }
+    else
+    {
+        att.email = email;
+        cout << "Enter name: ";
+        cin >> att.name;
+        cout << "Enter phone number: ";
+        cin >> att.contact_info;
+    c:
+        cout << "Enter password: " << endl;
+        cin >> pass1;
+        cout << "Confirm password: " << endl;
+        cin >> pass2;
+        if (pass1 == pass2)
+        {
+            att.attendant_id = attendant_id_generate();
+
+            att.password = pass1;
+            cout << "Successfuly registered as " << att.name << " with ID: " << att.attendant_id << endl;
+        }
+        else
+        {
+            cout << "Password is not the same !!!" << endl;
+            goto c;
+        }
+        file << att.email << "\t" << att.name << "\t" << att.attendant_id << "\t" << att.contact_info << "\t" << att.password << endl;
+        file.close();
+    }
 };
+
+int attendant_id_generate()
+{
+    string name, email, password;
+    int attendant_id = 1000, contact_info;
+
+    file.open("attendant_file.txt", ios::in);
+    if (!file.is_open())
+    {
+        cout << "Error opening file!" << endl;
+        exit(1);
+    }
+    if (file.peek() == ifstream::traits_type::eof())
+    {
+        return attendant_id;
+    }
+    else
+    {
+        while (file >> email >> name >> attendant_id >> contact_info >> password)
+        {
+        }
+        return attendant_id += 1;
+    }
+    file.close();
+}
