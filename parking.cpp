@@ -16,6 +16,7 @@ struct attendant_info{
 };
 
 struct vehicle_owner {
+    
     string name;
     int owner_id, vehicle_num, owner_phone_num;
 };
