@@ -110,7 +110,13 @@ void sign_in()
 
 void attendant_op();
 
-void vehicle_owner_op() {};
+void vehicle_owner_op() {
+    /*
+    enterinr or exiting checker
+    file: entered vehicles / exited vehicles
+
+    */
+};
 
 int main()
 {
