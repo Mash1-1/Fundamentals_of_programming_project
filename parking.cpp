@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 
 using namespace std;
-
 int tryal = 0;
 
 struct date
@@ -157,18 +157,36 @@ void exiting_vehicles() {
 
 };
 
-bool search(string email) {
-    /*
-    search for attendant (by email)) and vehicle owner
-    */
+bool search(string email2)
+{
+    ifstream attendant_rec("attendant_file.txt", ios::in);
+    if (!attendant_rec.is_open())
+    {
+        // Handle file opening exceptions
+        cout << "File not opened properly!";
+        return false;
+    }
+    // Initialize attributes to read from the file
+    string name, email, password;
+    int attendant_id, contact_info;
+    
+    while (attendant_rec >> email >> name >> attendant_id >> contact_info >> password)
+    {
+        // Check if the email already exists
+        if (email == email2)
+        {
+            return true;
+        }
+    }
+    return false;
 };
 
 void id_checker() {
     /*search attendant's ID and password */
 };
 
-
 void sign_in() {
+    cout << "Called Sign in!!" << endl;
     /*
         input: email
         function: read info from file and check if email existed
@@ -208,17 +226,19 @@ a:
     b:
         cout << "Account with this email already exist, Do you want to sign in ? \n1. Yes \n2. No \nYour choice: ";
         cin >> c;
+
         if (c == 1)
         {
             sign_in();
         }
         else if (c == 2)
         {
+            cout << "Please Enter a new email to register!" << endl;
             goto a;
         }
         else
         {
-            cout << "Invalid input: Please enter a valid input !!!";
+            cout << "Invalid input Please enter a valid input !!!";
             goto b;
         }
     }
@@ -226,27 +246,30 @@ a:
     {
         att.email = email;
         cout << "Enter name: ";
+
         cin >> att.name;
         cout << "Enter phone number: ";
+
         cin >> att.contact_info;
     c:
         cout << "Enter password: " << endl;
         cin >> pass1;
+        
         cout << "Confirm password: " << endl;
         cin >> pass2;
+        
         if (pass1 == pass2)
         {
             att.attendant_id = attendant_id_generate();
-
             att.password = pass1;
             cout << "Successfuly registered as " << att.name << " with ID: " << att.attendant_id << endl;
+            file << att.email << "\t" << att.name << "\t" << att.attendant_id << "\t" << att.contact_info << "\t" << att.password << endl;
         }
         else
         {
             cout << "Password is not the same !!!" << endl;
             goto c;
         }
-        file << att.email << "\t" << att.name << "\t" << att.attendant_id << "\t" << att.contact_info << "\t" << att.password << endl;
         file.close();
     }
 };
@@ -257,13 +280,9 @@ int attendant_id_generate()
     int attendant_id = 1000, contact_info;
 
     file.open("attendant_file.txt", ios::in);
-    if (!file.is_open())
-    {
-        cout << "Error opening file!" << endl;
-        exit(1);
-    }
     if (file.peek() == ifstream::traits_type::eof())
     {
+        file.close();
         return attendant_id;
     }
     else
@@ -271,7 +290,7 @@ int attendant_id_generate()
         while (file >> email >> name >> attendant_id >> contact_info >> password)
         {
         }
+        file.close();
         return attendant_id += 1;
     }
-    file.close();
 }
