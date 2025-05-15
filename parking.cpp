@@ -169,7 +169,7 @@ bool search(string email2)
     // Initialize attributes to read from the file
     string name, email, password;
     int attendant_id, contact_info;
-    
+
     while (attendant_rec >> email >> name >> attendant_id >> contact_info >> password)
     {
         // Check if the email already exists
@@ -181,86 +181,110 @@ bool search(string email2)
     return false;
 };
 
+
 void id_checker() {
     /*search attendant's ID and password */
 };
 
-void sign_in() {
-  ifstream infile("attendant_file.txt");
-  attendant_info attendant;
-  string email;
-  int id;
-  int choice;
-  string password;
-   bool email_found=false;
-    bool id_found=false;
-    cout<<"\nSign in options ";
-    cout<<" \n1.Sign with email";
-    cout<<"\n2.Sign with id"<<endl;
-    cout<<"Your choice : ";
-    cin>>choice;
-    if(!infile){
-      cout<<" unable to open 'attendent_file.txt' file ";
-      return;
-    }
-    A:
-    if(choice==1){
-      cout<<"Enter your email : ";
-      cin>>email;
-      cout<<"Enter your password : ";
-      cin>>password;
-      infile.clear();
-      infile.seekg(0);
-      while(infile>>attendant.email>>attendant.name>>attendant.attendant_id>>attendant.contact_info>>attendant.password){
-        if(attendant.email==email){
-             email_found=true;
-             if(attendant.password==password){
-                cout<<"Sign in successfully! "<<endl;
-                return;
-             }
-             else{
-                cout<<"Incorrect password "<<endl;
-                goto A;
-             }
-        }
-       
-    }
-     if(!email_found) {
-             cout<<"Incorrect email please enter the correct email again "<<endl;
-             goto A;
+void sign_in()
+{
+    ifstream infile("attendant_file.txt");
+    attendant_info attendant;
+    string email, password;
+    int id, choice;
+    bool email_found = false;
+    bool id_found = false;
+Y:
+    cout << "\nSign in options ";
+    cout << " \n1.Sign with email";
+    cout << "\n2.Sign with id" << endl;
+    cout << "Your choice : ";
+    cin >> choice;
 
+    if (!infile)
+    {
+        cout << " unable to open 'attendent_file.txt' file ";
+        return;
+    }
+A:
+    if (choice == 1)
+    {
+        cout << "Enter your email : ";
+        cin >> email;
+    Z:
+        cout << "Enter your password : ";
+        cin >> password;
+
+        infile.clear();
+        infile.seekg(0);
+
+        while (infile >> attendant.email >> attendant.name >> attendant.attendant_id >> attendant.contact_info >> attendant.password)
+        {
+            if (attendant.email == email)
+            {
+                email_found = true;
+                if (attendant.password == password)
+                {
+                    cout << "Sign in successfully! " << endl;
+                    // Take action
+                    return;
+                }
+                else
+                {
+                    cout << "Incorrect password Please enter the correct password! " << endl;
+                    goto Z;
+                }
+            }
         }
-     }
-        if(choice==2){
-            B:
-            cout<<"Enter your id : ";
-            cin>>id;
-            cout<<"Enter your password : ";
-            cin>>password;
-            infile.clear();
-            infile.seekg(0);
+        if (!email_found)
+        {
+            cout << "Incorrect email please enter the correct email again " << endl;
+            goto A;
         }
-        while(infile>>attendant.email>>attendant.name>>attendant.attendant_id>>attendant.contact_info>>attendant.password){
-        if(attendant.attendant_id==id){
-           id_found=true;
-           if(attendant.password==password){
-            cout<<" sign in successfully !"<<endl;
-            return;
-           }
-           else{
-            cout<<" incorrect password ";
+    }
+    else if (choice == 2)
+    {
+    B:
+        cout << "Enter your id : ";
+        cin >> id;
+
+        cout << "Enter your password : ";
+        cin >> password;
+
+        infile.clear();
+        infile.seekg(0);
+
+        while (infile >> attendant.email >> attendant.name >> attendant.attendant_id >> attendant.contact_info >> attendant.password)
+        {
+            if (attendant.attendant_id == id)
+            {
+                id_found = true;
+                if (attendant.password == password)
+                {
+                    cout << "Sign in successfully !" << endl;
+                    return;
+                }
+                else
+                {
+                    cout << "Incorrect password Please enter the correct password! " << endl;
+                    goto B;
+                }
+            }
+        }
+        if (!id_found)
+        {
+            cout << "Invalid id !" << endl;
             goto B;
-           }
         }
-        
     }
-    if(!id_found){
-            cout<<"Invalid id !"<<endl;
-             goto B;
-        }
-    
-}
+    else
+    {
+        cout << "Please enter a valid choice!\n";
+        goto Y;
+    }
 
+    infile.close();
+}
 
 void attendant_action() {
     /*summery:trasaction history
@@ -319,10 +343,10 @@ a:
     c:
         cout << "Enter password: " << endl;
         cin >> pass1;
-        
+
         cout << "Confirm password: " << endl;
         cin >> pass2;
-        
+
         if (pass1 == pass2)
         {
             att.attendant_id = attendant_id_generate();
