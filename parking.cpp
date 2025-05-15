@@ -186,16 +186,81 @@ void id_checker() {
 };
 
 void sign_in() {
-    cout << "Called Sign in!!" << endl;
-    /*
-        input: email
-        function: read info from file and check if email existed
-            if search():input attendant_Id, password
-                    if id_checker(): function attendant_action()
-                    else: print wrong pass and renter
-            else: print error message and goto option2()(with some modefication)
-    */
-};
+  ifstream infile("attendant_file.txt");
+  attendant_info attendant;
+  string email;
+  int id;
+  int choice;
+  string password;
+   bool email_found=false;
+    bool id_found=false;
+    cout<<"\nSign in options ";
+    cout<<" \n1.Sign with email";
+    cout<<"\n2.Sign with id"<<endl;
+    cout<<"Your choice : ";
+    cin>>choice;
+    if(!infile){
+      cout<<" unable to open 'attendent_file.txt' file ";
+      return;
+    }
+    A:
+    if(choice==1){
+      cout<<"Enter your email : ";
+      cin>>email;
+      cout<<"Enter your password : ";
+      cin>>password;
+      infile.clear();
+      infile.seekg(0);
+      while(infile>>attendant.email>>attendant.name>>attendant.attendant_id>>attendant.contact_info>>attendant.password){
+        if(attendant.email==email){
+             email_found=true;
+             if(attendant.password==password){
+                cout<<"Sign in successfully! "<<endl;
+                return;
+             }
+             else{
+                cout<<"Incorrect password "<<endl;
+                goto A;
+             }
+        }
+       
+    }
+     if(!email_found) {
+             cout<<"Incorrect email please enter the correct email again "<<endl;
+             goto A;
+
+        }
+     }
+        if(choice==2){
+            B:
+            cout<<"Enter your id : ";
+            cin>>id;
+            cout<<"Enter your password : ";
+            cin>>password;
+            infile.clear();
+            infile.seekg(0);
+        }
+        while(infile>>attendant.email>>attendant.name>>attendant.attendant_id>>attendant.contact_info>>attendant.password){
+        if(attendant.attendant_id==id){
+           id_found=true;
+           if(attendant.password==password){
+            cout<<" sign in successfully !"<<endl;
+            return;
+           }
+           else{
+            cout<<" incorrect password ";
+            goto B;
+           }
+        }
+        
+    }
+    if(!id_found){
+            cout<<"Invalid id !"<<endl;
+             goto B;
+        }
+    
+}
+
 
 void attendant_action() {
     /*summery:trasaction history
