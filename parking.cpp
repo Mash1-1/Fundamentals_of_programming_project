@@ -118,6 +118,7 @@ void vehicle_owner_op() {
     if entering goto entering_vehicle()
     else exiting goto exiting_vehicles()
     */
+   
 };
 int attendant_id_generate();
 void entering_vehicle();
@@ -189,10 +190,6 @@ bool search(string email2)
         }
     }
     return false;
-};
-
-void id_checker() {
-    /*search attendant's ID and password */
 };
 
 void sign_in()
