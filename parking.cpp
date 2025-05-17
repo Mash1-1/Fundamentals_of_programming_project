@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <ctime>
 
 using namespace std;
 int tryal = 0;
@@ -18,27 +19,16 @@ struct attendant_info
 
 struct vehicle_owner
 {
-    string name;
-    int owner_id, vehicle_num, owner_phone_num;
+    string name, vehicle_brand, plate_number, phone_num;
+    int owner_id;
 };
 
 class parking
 {
 public:
-    string slot_id, vehicle_type, status;
+    string slot_id, vehicle_type, status = "free";
     double price;
     struct vehicle_owner;
-};
-
-// struct parking_slot
-// {
-//     string slot_id, vehicle_type, status;
-//     double price;
-//         struct vehicle_owner;
-// };
-
-struct transaction
-{
 };
 
 fstream file;
@@ -81,6 +71,7 @@ a:
         err();
         goto a;
     }
+    cout << endl;
     return choice;
 };
 
@@ -105,20 +96,112 @@ b:
 
 bool search(string);
 
+// Vehicle owner id generator
+int generate_id_vo()
+{
+    return 1;
+};
+
+// Find and give a free slot to the vehicle owner.
+parking get_free_parking_slot(){};
+
+// Gets the current time as a string to store.
+void check_time(char *time1)
+{
+    auto global_time = time(nullptr);
+    tm *local_time = localtime(&global_time);
+    strftime(time1, 6, "%H:%M", local_time);
+};
+
 void register_attendant();
 void sign_in();
 
 void attendant_op();
 
-void vehicle_owner_op() {
+// Entering vehicles' menu and operation
+void entering_vehicle()
+{
+    int entry_time = time(nullptr);
+
+    vehicle_owner vehicle1;
+    ofstream vehicles_file("vehicles.txt", ios::out);
+
+    if (!vehicles_file)
+    {
+        cout << "Couldn't open vehicle file!\n";
+        exit(0);
+    }
+
+    cout << "Welcome!\n";
+
+    cout << "Enter your name: \n";
+    cin >> vehicle1.name;
+
+    cout << "Enter the brand of your vehicle: \n";
+    cin >> vehicle1.vehicle_brand;
+
+    cout << "Enter your plate number: \n";
+    cin >> vehicle1.plate_number;
+
+    cout << "Enter your phone number: \n";
+    cin >> vehicle1.phone_num;
+
+    vehicle1.owner_id = generate_id_vo();
+
+    vehicles_file << vehicle1.owner_id
+                  << "\t" << vehicle1.name
+                  << "\t" << vehicle1.vehicle_brand
+                  << "\t" << vehicle1.plate_number
+                  << "\t" << vehicle1.phone_num << endl;
+    vehicles_file.close();
+};
+
+// Exiting vehicles' owners
+void exiting_vehicles()
+{
+    int exit_time;
+};
+
+void vehicle_owner_op()
+{
     /*
     prompt user: entering or exiting checker
     file: entered vehicles / exited vehicles
     time tracker for both enter and exit
     if entering goto entering_vehicle()
     else exiting goto exiting_vehicles()
+    feedback
     */
-   
+    int vo_choice;
+    cout << "Welcome to the Vehicle owners menu!\n";
+    cout << "What do you want to do? \n";
+vo_input:
+    cout << "1. Enter the parking space.\n";
+    cout << "2. Exit the parking space.\n";
+    cout << "3. Reserve a parking space.\n";
+    cout << "4. Exit to main menu.\n";
+    cout << "Your choice: ";
+    cin >> vo_choice;
+    if (cin.fail())
+    {
+        err();
+        goto vo_input;
+    }
+    switch (vo_choice)
+    {
+    case 1:
+    {
+        entering_vehicle();
+    }
+    break;
+    case 2:
+    {
+        exiting_vehicles();
+    }
+    break;
+    default:
+        break;
+    }
 };
 int attendant_id_generate();
 void entering_vehicle();
@@ -158,14 +241,6 @@ void attendant_op()
         err();
         break;
     }
-};
-
-void entering_vehicle() {
-
-};
-
-void exiting_vehicles() {
-
 };
 
 bool search(string email2)
