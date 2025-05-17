@@ -6,6 +6,8 @@ using namespace std;
 
 fstream file;
 int tryal = 0;
+bool create_slot = false;
+double rate[] = {0.004, 0.08, 0.009};
 
 struct attendant_info
 {
@@ -16,7 +18,7 @@ struct attendant_info
 struct vehicle_owner
 {
     string name, vehicle_brand, plate_number, phone_num;
-    int slotID;
+    int slotID, entry_time, vh_type;
 };
 
 class parking
@@ -25,12 +27,24 @@ public:
     string vehicle_type, status = "free";
     int slot_id;
     double price;
-    struct vehicle_owner;
+    vehicle_owner owner;
 };
 
 // initialize parking slots in a 2D array.
 const int n = 10;
 parking parking_slots[3][n];
+void create_parking_slots()
+{
+    int slot_ = 1;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            parking_slots[i][j].slot_id = slot_;
+            slot_++;
+        }
+    }
+};
 
 // Finds the attendant from file and sets the parameters of the givent stuct to the found id.
 void find(attendant_info *att, string email)
@@ -145,6 +159,22 @@ void register_attendant();
 void sign_in();
 
 void attendant_op();
+void reserve_slot();
+
+// this function finds and returns the vehicle owner in the slots.
+vehicle_owner find_vehicle_owner(int slot_id)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if(parking_slots[i][j].slot_id==slot_id){
+                parking_slots[i][j].status = "free";
+                return parking_slots[i][j].owner;
+            }
+        }
+    }
+};
 
 // Entering vehicles' menu and operation
 void entering_vehicle()
@@ -153,7 +183,7 @@ void entering_vehicle()
     int vh_type;
 
     vehicle_owner vehicle1;
-    ofstream vehicles_file("vehicles.txt", ios::out);
+    ofstream vehicles_file("vehicles.txt", ios::app);
 
     if (!vehicles_file)
     {
@@ -161,6 +191,7 @@ void entering_vehicle()
         exit(0);
     }
 
+    cout << endl;
     cout << "Welcome!\n";
 
     cout << "Enter your name: \n";
@@ -182,6 +213,8 @@ vehicle_type_input:
         goto vehicle_type_input;
     }
 
+    vh_type--;
+
     cout << "Enter your plate number: \n";
     cin >> vehicle1.plate_number;
 
@@ -189,7 +222,9 @@ vehicle_type_input:
     cin >> vehicle1.phone_num;
 
     parking free_slot = get_free_parking_slot(vh_type);
+    free_slot.owner = vehicle1;
     vehicle1.slotID = free_slot.slot_id;
+    vehicle1.entry_time = entry_time;
 
     free_slot.status = "Occupied";
     vehicles_file
@@ -198,25 +233,44 @@ vehicle_type_input:
         << "\t" << vehicle1.vehicle_brand
         << "\t" << vehicle1.plate_number
         << "\t" << vehicle1.phone_num << endl;
+
     vehicles_file.close();
+    cout << "You have successfully entered, \nPlease head to slot number " << vehicle1.slotID << endl;
 };
 
 // Exiting vehicles' owners
 void exiting_vehicles()
 {
     int exit_time;
+    double price;
+    exit_time = time(nullptr);
+    ofstream transaction("transaction.txt", ios::app);
+    ifstream vehicles("vehicles.txt", ios::in);
+    if (!transaction || !vehicles)
+    {
+        cout << "Error opening the file !" << endl;
+        exit(0);
+    }
+    int slot;
+
+    cout << "Enter slot ID: \n";
+    cin >> slot;
+
+    vehicle_owner owner;
+    owner = find_vehicle_owner(slot);
+    cout << owner.name <<endl;
+
+    price = rate[owner.vh_type] * (exit_time - owner.entry_time);
+
+    transaction << owner.name << "\t" << owner.slotID << "\t" << owner.entry_time << "\t" << exit_time <<endl;
+    cout << "Transaction successfully done !\n";
+
+    transaction.close();
+    vehicles.close();
 };
 
 void vehicle_owner_op()
 {
-    /*
-    prompt user: entering or exiting checker
-    file: entered vehicles / exited vehicles
-    time tracker for both enter and exit
-    if entering goto entering_vehicle()
-    else exiting goto exiting_vehicles()
-    feedback
-    */
     int vo_choice;
     cout << "Welcome to the Vehicle owners menu!\n";
     cout << "What do you want to do? \n";
@@ -244,16 +298,25 @@ vo_input:
         exiting_vehicles();
     }
     break;
+    // case 3:
+    // {
+    //     reserve_slot();
+    // }
+    // break;
     default:
         break;
     }
 };
 int attendant_id_generate();
-void entering_vehicle();
-void exiting_vehicles();
 
 int main()
 {
+    if (!create_slot)
+    {
+        create_parking_slots();
+        create_slot = true;
+    }
+
     // menu:
     int choice1 = option1();
     if (choice1 == 1)
