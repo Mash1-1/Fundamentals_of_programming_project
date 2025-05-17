@@ -24,11 +24,11 @@ struct vehicle_owner
 
 class parking
 {
+public:
     string slot_id, vehicle_type, status;
     double price;
     struct vehicle_owner;
 };
-
 
 // struct parking_slot
 // {
@@ -42,6 +42,11 @@ struct transaction
 };
 
 fstream file;
+// Finds the attendant from file and sets the parameters of the givent stuct to the found id.
+void find(attendant_info *att, string email);
+
+// Implemets all the functionality for the attendants.
+void attendant_action(string email);
 
 void err()
 {
@@ -100,12 +105,6 @@ b:
 
 bool search(string);
 
-void exit_program()
-{
-    cout << "Exiting the program; have a nice day!" << endl;
-    exit(0);
-};
-
 void register_attendant();
 void sign_in();
 
@@ -133,7 +132,10 @@ int main()
     else if (choice1 == 2)
         vehicle_owner_op();
     else
-        exit_program();
+    {
+        cout << "Exiting the program; have a nice day!" << endl;
+        exit(0);
+    }
 }
 
 void attendant_op()
@@ -189,7 +191,6 @@ bool search(string email2)
     return false;
 };
 
-
 void id_checker() {
     /*search attendant's ID and password */
 };
@@ -233,8 +234,9 @@ A:
                 email_found = true;
                 if (attendant.password == password)
                 {
-                    cout << "Sign in successfully! " << endl;
-                    // Take action
+                    cout << "Sign in successfully! \n"
+                         << endl;
+                    attendant_action(attendant.email);
                     return;
                 }
                 else
@@ -270,6 +272,7 @@ A:
                 if (attendant.password == password)
                 {
                     cout << "Sign in successfully !" << endl;
+                    attendant_action(attendant.email);
                     return;
                 }
                 else
@@ -288,13 +291,16 @@ A:
     else
     {
         cout << "Please enter a valid choice!\n";
+        cin.clear();
+        cin.ignore();
         goto Y;
     }
 
     infile.close();
 }
 
-void attendant_action() {
+void attendant_action(string email)
+{
     /*summery:trasaction history
                 (ownwner info / feedback and rating)
                 display parking slot info(available, reserved, occupied, expired(passed the time limit)) slots
@@ -302,7 +308,77 @@ void attendant_action() {
                 display price
                 search for vehicle owner(by ID, vehicle name, type)
     */
+
+    attendant_info att;
+    find(&att, email);
+    int att_choice;
+    cout << "Hello parking attendant " << att.name << "!\n";
+    cout << "What would you like to do today: \n\n";
+    cout << "1. Display Parking Slot info.\n";
+    cout << "2. Display history of entry and exit.\n";
+    cout << "3. Search and display vehicle owner information.\n";
+    cout << "4. Display transaction history.\n";
+    cout << "5. Exit to menu.\n";
+att_inp:
+    cout << "Your choice: ";
+    cin >> att_choice;
+
+    if (cin.fail())
+    {
+        err();
+        goto att_inp;
+    }
+
+    switch (att_choice)
+    {
+    case 1:
+    {
+    }
+    break;
+    case 2:
+    {
+    }
+    break;
+    case 3:
+    {
+    }
+    break;
+    case 4:
+    {
+    }
+    break;
+    default:
+    {
+        cout << "Exiting to main menu!\n\n";
+        main();
+    }
+    break;
+    }
 };
+
+void find(attendant_info *att, string email)
+{
+    ifstream attendant_rec("attendant_file.txt", ios::in);
+
+    string email2, name, password;
+    int contact_info, attendant_id;
+
+    while (attendant_rec >> email2 >> name >> attendant_id >> contact_info >> password)
+    {
+        // Check if the email already exists
+        if (email == email2)
+        {
+            att->attendant_id = attendant_id;
+            att->name = name;
+            att->email = email;
+            att->contact_info = contact_info;
+            att->password = password;
+            attendant_rec.close();
+            return;
+        }
+    }
+    attendant_rec.close();
+}
 
 void register_attendant()
 {
