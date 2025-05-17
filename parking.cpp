@@ -2,14 +2,10 @@
 #include <fstream>
 #include <string>
 #include <ctime>
-
 using namespace std;
-int tryal = 0;
 
-struct date
-{
-    int day, month, year;
-};
+fstream file;
+int tryal = 0;
 
 struct attendant_info
 {
@@ -20,20 +16,46 @@ struct attendant_info
 struct vehicle_owner
 {
     string name, vehicle_brand, plate_number, phone_num;
-    int owner_id;
+    int slotID;
 };
 
 class parking
 {
 public:
-    string slot_id, vehicle_type, status = "free";
+    string vehicle_type, status = "free";
+    int slot_id;
     double price;
     struct vehicle_owner;
 };
 
-fstream file;
+// initialize parking slots in a 2D array.
+const int n = 10;
+parking parking_slots[3][n];
+
 // Finds the attendant from file and sets the parameters of the givent stuct to the found id.
-void find(attendant_info *att, string email);
+void find(attendant_info *att, string email)
+{
+    ifstream attendant_rec("attendant_file.txt", ios::in);
+
+    string email2, name, password;
+    int contact_info, attendant_id;
+
+    while (attendant_rec >> email2 >> name >> attendant_id >> contact_info >> password)
+    {
+        // Check if the email already exists
+        if (email == email2)
+        {
+            att->attendant_id = attendant_id;
+            att->name = name;
+            att->email = email;
+            att->contact_info = contact_info;
+            att->password = password;
+            attendant_rec.close();
+            return;
+        }
+    }
+    attendant_rec.close();
+};
 
 // Implemets all the functionality for the attendants.
 void attendant_action(string email);
@@ -96,14 +118,20 @@ b:
 
 bool search(string);
 
-// Vehicle owner id generator
-int generate_id_vo()
-{
-    return 1;
-};
-
 // Find and give a free slot to the vehicle owner.
-parking get_free_parking_slot(){};
+parking get_free_parking_slot(int type_vh)
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (parking_slots[type_vh][i].status == "free")
+        {
+            return parking_slots[type_vh][i];
+        }
+    }
+    cout << "No parking slots available currently!\n";
+    cout << "Please come back later.\n";
+    exit(0);
+};
 
 // Gets the current time as a string to store.
 void check_time(char *time1)
@@ -122,6 +150,7 @@ void attendant_op();
 void entering_vehicle()
 {
     int entry_time = time(nullptr);
+    int vh_type;
 
     vehicle_owner vehicle1;
     ofstream vehicles_file("vehicles.txt", ios::out);
@@ -139,6 +168,19 @@ void entering_vehicle()
 
     cout << "Enter the brand of your vehicle: \n";
     cin >> vehicle1.vehicle_brand;
+vehicle_type_input:
+    cout << "Enter your vehicle size: \n";
+    cout << "1. Light weight (upto 4500 Kg) :\n";
+    cout << "2. Heavy weight (4500+ kg): \n";
+    cout << "3. Very Light (Motorbikes, Three wheeled): \n";
+    cout << "Your choice: ";
+    cin >> vh_type;
+
+    if (cin.fail())
+    {
+        err();
+        goto vehicle_type_input;
+    }
 
     cout << "Enter your plate number: \n";
     cin >> vehicle1.plate_number;
@@ -146,13 +188,16 @@ void entering_vehicle()
     cout << "Enter your phone number: \n";
     cin >> vehicle1.phone_num;
 
-    vehicle1.owner_id = generate_id_vo();
+    parking free_slot = get_free_parking_slot(vh_type);
+    vehicle1.slotID = free_slot.slot_id;
 
-    vehicles_file << vehicle1.owner_id
-                  << "\t" << vehicle1.name
-                  << "\t" << vehicle1.vehicle_brand
-                  << "\t" << vehicle1.plate_number
-                  << "\t" << vehicle1.phone_num << endl;
+    free_slot.status = "Occupied";
+    vehicles_file
+        << vehicle1.name
+        << "\t" << vehicle1.slotID
+        << "\t" << vehicle1.vehicle_brand
+        << "\t" << vehicle1.plate_number
+        << "\t" << vehicle1.phone_num << endl;
     vehicles_file.close();
 };
 
@@ -427,30 +472,6 @@ att_inp:
     break;
     }
 };
-
-void find(attendant_info *att, string email)
-{
-    ifstream attendant_rec("attendant_file.txt", ios::in);
-
-    string email2, name, password;
-    int contact_info, attendant_id;
-
-    while (attendant_rec >> email2 >> name >> attendant_id >> contact_info >> password)
-    {
-        // Check if the email already exists
-        if (email == email2)
-        {
-            att->attendant_id = attendant_id;
-            att->name = name;
-            att->email = email;
-            att->contact_info = contact_info;
-            att->password = password;
-            attendant_rec.close();
-            return;
-        }
-    }
-    attendant_rec.close();
-}
 
 void register_attendant()
 {
