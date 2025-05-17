@@ -22,12 +22,20 @@ struct vehicle_owner
     int owner_id, vehicle_num, owner_phone_num;
 };
 
-struct parking_slot
+class parking
 {
     string slot_id, vehicle_type, status;
     double price;
     struct vehicle_owner;
 };
+
+
+// struct parking_slot
+// {
+//     string slot_id, vehicle_type, status;
+//     double price;
+//         struct vehicle_owner;
+// };
 
 struct transaction
 {
