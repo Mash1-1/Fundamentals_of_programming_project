@@ -18,7 +18,8 @@ struct attendant_info
 struct vehicle_owner
 {
     string name, vehicle_brand, plate_number, phone_num;
-    int slotID, entry_time, vh_type;
+    int slotID, vh_type;
+    long long int entry_time;
 };
 
 class parking
@@ -26,7 +27,6 @@ class parking
 public:
     string status = "free";
     int slot_id, vehicle_type;
-    double price;
     vehicle_owner owner;
 };
 
@@ -43,6 +43,63 @@ void create_parking_slots()
             parking_slots[i][j].slot_id = slot_;
             slot_++;
         }
+    }
+};
+
+// Read and display files.
+void display(int choice)
+{
+    switch (choice)
+    {
+    case 1:
+    {
+        cout << "All parking slots information: \n";
+        cout << "SlotId\tStatus\tVehicle Owner name\n";
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                if (parking_slots[i][j].status != "free")
+                {
+                    cout << parking_slots[i][j].status << "\t\t"
+                         << parking_slots[i][j].slot_id
+                         << "\t\t" << parking_slots[i][j].owner.name << endl;
+                }
+                else
+                {
+                    cout << parking_slots[i][j].status << "\t" << parking_slots[i][j].slot_id << "\t\ts-" << endl;
+                }
+            }
+        }
+    }
+    break;
+    case 2:
+    {
+    }
+    break;
+    case 3:
+    {
+        ifstream tr_his("transaction.txt", ios::in);
+        if (!tr_his)
+        {
+            cout << "No transactions made yet!\n";
+            break;
+        }
+        string name;
+        int slotID, price, entry_time, exit_time;
+
+        cout << "\nTransaction History:\n\n";
+        cout << "Name\tSlotID\tPrice Payed($)\n"
+             << endl;
+
+        while (tr_his >> name >> slotID >> price >> entry_time >> exit_time)
+        {
+            cout << name << "\t" << slotID << "\t" << price << endl;
+        }
+    }
+    break;
+    default:
+        break;
     }
 };
 
@@ -77,9 +134,11 @@ void attendant_action(string email);
 void err()
 {
     tryal += 1;
+    cin.clear();
+    cin.ignore();
     if (tryal > 4)
     {
-        cout << "Too many invalid inputs ; Program is terminating!\n";
+        cout << "Too many invalid inputs!\nProgram is terminating!\n";
         exit(0);
     }
     else
@@ -90,7 +149,7 @@ void err()
 
 int option1()
 {
-    cout << "Hello! Please choose your role: " << endl;
+    cout << "\nHello! Please choose your role: " << endl;
     cout << "Interact with the menu by pressing the number of your choice! " << endl;
 
     int choice;
@@ -133,22 +192,22 @@ b:
 bool search(string);
 
 // Find and give a free slot to the vehicle owner.
-parking get_free_parking_slot(int type_vh)
+int get_free_parking_slot(int type_vh)
 {
     for (int i = 0; i < n; i++)
     {
         if (parking_slots[type_vh][i].status == "free")
         {
-            return parking_slots[type_vh][i];
+            return i;
         }
     }
     cout << "No parking slots available currently!\n";
     cout << "Please come back later.\n";
-    exit(0);
+    return -1;
 };
 
 // Gets the current time as a string to store.
-void check_time(char *time1)
+void check_time(char time1[6])
 {
     auto global_time = time(nullptr);
     tm *local_time = localtime(&global_time);
@@ -172,7 +231,7 @@ void reserve_slot()
     if (!vehicles_file)
     {
         cout << "Couldn't open vehicle file!\n";
-        exit(0);
+        return;
     }
 
     cout << endl;
@@ -205,12 +264,16 @@ vehicle_type_input:
     cout << "Enter your phone number: \n";
     cin >> vehicle1.phone_num;
 
-    parking free_slot = get_free_parking_slot(vh_type);
-    free_slot.owner = vehicle1;
-    vehicle1.slotID = free_slot.slot_id;
+    int free_slot = get_free_parking_slot(vh_type);
+    if (free_slot == -1)
+    {
+        return;
+    }
+    parking_slots[vh_type][free_slot].owner = vehicle1;
+    vehicle1.slotID = parking_slots[vh_type][free_slot].slot_id;
     vehicle1.entry_time = entry_time;
 
-    free_slot.status = "reserved";
+    parking_slots[vh_type][free_slot].status = "reserved";
     vehicles_file
         << vehicle1.name
         << "\t" << vehicle1.slotID
@@ -220,6 +283,21 @@ vehicle_type_input:
 
     vehicles_file.close();
     cout << "You have successfully Reserved a parking slot, with ID: " << vehicle1.slotID << endl;
+};
+
+// Make a reserved slot free.
+void unreserve(int slotID)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (parking_slots[i][j].slot_id == slotID && parking_slots[i][j].status == "reserved")
+            {
+                parking_slots[i][j].status = "free";
+            }
+        }
+    }
 };
 
 // finds the reserved slot for the vehicle owner by using slot ID
@@ -235,39 +313,49 @@ void reserve_finder()
     cout << "Your choice: ";
     cin >> vh_type;
 
+    bool valid = false;
     for (int i = 0; i < n; i++)
     {
         if (parking_slots[vh_type - 1][i].status == "reserved" && parking_slots[vh_type - 1][i].slot_id == slot_id)
         {
             index = 0;
-            cout << "Slot found ! \nPlease go to your slot." <<endl;
-            parking_slots[vh_type - 1][i].status == "occupied";
-            return;
+            cout << "Slot found! \nPlease go to your slot." << endl;
+            parking_slots[vh_type - 1][i].status = "occupied";
+            valid = true;
+            break;
         }
     }
-    cout << "Sorry Slot ID not found\n";
+    if (!valid)
+    {
+        cout << "Sorry Slot ID not found\n";
+    }
 };
 
 // this function finds and returns the vehicle owner in the slots.
-vehicle_owner find_vehicle_owner(int slot_id)
+void find_vehicle_owner(int slotid, vehicle_owner *owner)
 {
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            if (parking_slots[i][j].slot_id == slot_id)
+            if (parking_slots[i][j].slot_id == slotid)
             {
                 parking_slots[i][j].status = "free";
-                return parking_slots[i][j].owner;
+                owner->name = parking_slots[i][j].owner.name;
+                owner->entry_time = parking_slots[i][j].owner.entry_time;
+                owner->slotID = parking_slots[i][j].slot_id;
+                owner->vh_type = parking_slots[i][j].owner.vh_type;
+                return;
             }
         }
     }
+    cout << "Owner not found!\n";
 };
 
 // Entering vehicles' menu and operation
 void entering_vehicle()
 {
-    int entry_time = time(nullptr);
+    long long int entry_time = time(nullptr);
     int vh_type;
 
     vehicle_owner vehicle1;
@@ -276,12 +364,11 @@ void entering_vehicle()
     if (!vehicles_file)
     {
         cout << "Couldn't open vehicle file!\n";
-        exit(0);
+        return;
     }
 
     cout << endl;
     cout << "Welcome!\n";
-
     cout << "Enter your name: \n";
     cin >> vehicle1.name;
 
@@ -302,19 +389,26 @@ vehicle_type_input:
     }
 
     vh_type--;
-
+    vehicle1.vh_type = vh_type;
     cout << "Enter your plate number: \n";
     cin >> vehicle1.plate_number;
 
     cout << "Enter your phone number: \n";
     cin >> vehicle1.phone_num;
 
-    parking free_slot = get_free_parking_slot(vh_type);
-    free_slot.owner = vehicle1;
-    vehicle1.slotID = free_slot.slot_id;
-    vehicle1.entry_time = entry_time;
+    int free_slot = get_free_parking_slot(vh_type);
+    if (free_slot == -1)
+    {
+        return;
+    }
+    parking_slots[vh_type][free_slot].owner = vehicle1;
 
-    free_slot.status = "Occupied";
+    vehicle1.slotID = parking_slots[vh_type][free_slot].slot_id;
+    vehicle1.entry_time = entry_time;
+    cout << vehicle1.entry_time;
+    cout << vehicle1.entry_time << endl;
+    parking_slots[vh_type][free_slot].status = "Occupied";
+
     vehicles_file
         << vehicle1.name
         << "\t" << vehicle1.slotID
@@ -323,36 +417,49 @@ vehicle_type_input:
         << "\t" << vehicle1.phone_num << endl;
 
     vehicles_file.close();
-    cout << "You have successfully entered, \nPlease head to slot number " << vehicle1.slotID << endl;
+    cout << "You have successfully entered, \n\nPlease head to slot number " << vehicle1.slotID << endl;
 };
 
 // Exiting vehicles' owners
 void exiting_vehicles()
 {
-    int exit_time;
+    long long int exit_time = time(nullptr);
     double price;
-    exit_time = time(nullptr);
+
     ofstream transaction("transaction.txt", ios::app);
     ifstream vehicles("vehicles.txt", ios::in);
+
     if (!transaction || !vehicles)
     {
         cout << "Error opening the file !" << endl;
         exit(0);
     }
-    int slot;
 
+    int slot;
     cout << "Enter slot ID: \n";
     cin >> slot;
 
     vehicle_owner owner;
-    owner = find_vehicle_owner(slot);
-    cout << owner.name << endl;
-
+    find_vehicle_owner(slot, &owner);
+    cout << owner.name << "\t" << owner.entry_time << endl;
     price = rate[owner.vh_type] * (exit_time - owner.entry_time);
+    cout << "Exit time: " << exit_time << "\t" << "Entry time: " << owner.entry_time << endl;
+pay:
+    int choice;
+    cout << "Hello " << owner.name << endl;
+    cout << "You are charged " << price << " amount by the rate of " << rate[slot - 1] << " per second!\nPlease pay the amount\n";
+    cout << "1. Pay " << price << "$";
+    cin >> choice;
 
-    transaction << owner.name << "\t" << owner.slotID << "\t" << owner.entry_time << "\t" << exit_time << endl;
+    if (cin.fail())
+    {
+        err();
+        goto pay;
+    }
+
+    transaction << owner.name << "\t" << owner.slotID << "\t" << price << "\t" << owner.entry_time << "\t" << exit_time << endl;
     cout << "Transaction successfully done !\n";
-
+    cout << "Have a nice day!\n";
     transaction.close();
     vehicles.close();
 };
@@ -366,7 +473,8 @@ vo_input:
     cout << "1. Enter the parking space.\n";
     cout << "2. Exit the parking space.\n";
     cout << "3. Reserve a parking space.\n";
-    cout << "4. Exit to main menu.\n";
+    cout << "4. Enter a reserved parking slot.\n";
+    cout << "5. Exit to main menu.\n";
     cout << "Your choice: ";
     cin >> vo_choice;
     if (cin.fail())
@@ -386,16 +494,20 @@ vo_input:
         exiting_vehicles();
     }
     break;
-    // case 3:
-    // {
-    //     reserve_slot();
-    // }
-    // break;
+    case 3:
+    {
+        reserve_slot();
+    }
+    break;
+    case 4:
+    {
+        reserve_finder();
+    }
+    break;
     default:
         break;
     }
 };
-int attendant_id_generate();
 
 int main()
 {
@@ -406,16 +518,20 @@ int main()
     }
 
     // menu:
-    int choice1 = option1();
-    if (choice1 == 1)
-        attendant_op();
-    else if (choice1 == 2)
-        vehicle_owner_op();
-    else
+    int choice1 = 1;
+    do
     {
-        cout << "Exiting the program; have a nice day!" << endl;
-        exit(0);
-    }
+        choice1 = option1();
+        if (choice1 == 1)
+            attendant_op();
+        else if (choice1 == 2)
+            vehicle_owner_op();
+        else
+        {
+            cout << "Exiting the program; have a nice day!" << endl;
+            exit(0);
+        }
+    } while (choice1 != 3);
 }
 
 void attendant_op()
@@ -431,7 +547,7 @@ void attendant_op()
         register_attendant();
         break;
     case 3:
-        main();
+        return;
         break;
     default:
         err();
@@ -472,8 +588,8 @@ void sign_in()
     bool email_found = false;
     bool id_found = false;
 Y:
-    cout << "\nSign in options ";
-    cout << " \n1.Sign with email";
+    cout << "\nSign in options: ";
+    cout << "\n1.Sign with email";
     cout << "\n2.Sign with id" << endl;
     cout << "Your choice : ";
     cin >> choice;
@@ -569,24 +685,22 @@ A:
 
 void attendant_action(string email)
 {
-    /*summery:trasaction history
-                (ownwner info / feedback and rating)
-                display parking slot info(available, reserved, occupied, expired(passed the time limit)) slots
-                display entry and exit time
-                display price
-                search for vehicle owner(by ID, vehicle name, type)
-    */
-
+    // Store attendant as a structure.
     attendant_info att;
+
+    // Fill the structure with the attendant information.
     find(&att, email);
+
     int att_choice;
     cout << "Hello parking attendant " << att.name << "!\n";
     cout << "What would you like to do today: \n\n";
+
     cout << "1. Display Parking Slot info.\n";
     cout << "2. Display history of entry and exit.\n";
     cout << "3. Search and display vehicle owner information.\n";
     cout << "4. Display transaction history.\n";
-    cout << "5. Exit to menu.\n";
+    cout << "5. Unreserve a reserved parking slot.\n";
+    cout << "6. Exit to menu.\n\n";
 att_inp:
     cout << "Your choice: ";
     cin >> att_choice;
@@ -601,26 +715,67 @@ att_inp:
     {
     case 1:
     {
+        display(1);
     }
     break;
     case 2:
     {
+        display(2);
     }
     break;
     case 3:
     {
+        string name;
+        cout << "Enter vehicle owner name: ";
+        cin >> name;
+
+        ifstream vehichles_file("vehicles.txt", ios::in);
+        // while () {
+
+        // }
+        vehichles_file.close();
     }
     break;
     case 4:
     {
+        display(3);
+    }
+    break;
+    case 5:
+    {
+        int slotID;
+        cout << "Enter slotID to unreserve: ";
+        cin >> slotID;
+        unreserve(slotID);
     }
     break;
     default:
     {
         cout << "Exiting to main menu!\n\n";
-        main();
+        return;
     }
     break;
+    }
+};
+
+int attendant_id_generate()
+{
+    string name, email, password;
+    int attendant_id = 1000, contact_info;
+
+    file.open("attendant_file.txt", ios::in);
+    if (file.peek() == ifstream::traits_type::eof())
+    {
+        file.close();
+        return attendant_id;
+    }
+    else
+    {
+        while (file >> email >> name >> attendant_id >> contact_info >> password)
+        {
+        }
+        file.close();
+        return attendant_id += 1;
     }
 };
 
@@ -632,7 +787,7 @@ void register_attendant()
     if (!file)
     {
         cout << "Error opening file!" << endl;
-        exit(1);
+        return;
     }
 a:
     cout << "Enter email: ";
@@ -690,24 +845,3 @@ a:
         file.close();
     }
 };
-
-int attendant_id_generate()
-{
-    string name, email, password;
-    int attendant_id = 1000, contact_info;
-
-    file.open("attendant_file.txt", ios::in);
-    if (file.peek() == ifstream::traits_type::eof())
-    {
-        file.close();
-        return attendant_id;
-    }
-    else
-    {
-        while (file >> email >> name >> attendant_id >> contact_info >> password)
-        {
-        }
-        file.close();
-        return attendant_id += 1;
-    }
-}
