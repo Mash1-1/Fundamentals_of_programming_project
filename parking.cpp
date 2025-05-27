@@ -24,8 +24,8 @@ struct vehicle_owner
 class parking
 {
 public:
-    string vehicle_type, status = "free";
-    int slot_id;
+    string status = "free";
+    int slot_id, vehicle_type;
     double price;
     vehicle_owner owner;
 };
@@ -159,7 +159,94 @@ void register_attendant();
 void sign_in();
 
 void attendant_op();
-void reserve_slot();
+
+// reserve a parkin slot using all the informations from the vehicle owner
+void reserve_slot()
+{
+    int entry_time = time(nullptr);
+    int vh_type;
+
+    vehicle_owner vehicle1;
+    ofstream vehicles_file("vehicles.txt", ios::app);
+
+    if (!vehicles_file)
+    {
+        cout << "Couldn't open vehicle file!\n";
+        exit(0);
+    }
+
+    cout << endl;
+    cout << "Welcome!\n";
+
+    cout << "Enter your name: \n";
+    cin >> vehicle1.name;
+
+    cout << "Enter the brand of your vehicle: \n";
+    cin >> vehicle1.vehicle_brand;
+vehicle_type_input:
+    cout << "Enter your vehicle size: \n";
+    cout << "1. Light weight (upto 4500 Kg) :\n";
+    cout << "2. Heavy weight (4500+ kg): \n";
+    cout << "3. Very Light (Motorbikes, Three wheeled): \n";
+    cout << "Your choice: ";
+    cin >> vh_type;
+
+    if (cin.fail())
+    {
+        err();
+        goto vehicle_type_input;
+    }
+
+    vh_type--;
+
+    cout << "Enter your plate number: \n";
+    cin >> vehicle1.plate_number;
+
+    cout << "Enter your phone number: \n";
+    cin >> vehicle1.phone_num;
+
+    parking free_slot = get_free_parking_slot(vh_type);
+    free_slot.owner = vehicle1;
+    vehicle1.slotID = free_slot.slot_id;
+    vehicle1.entry_time = entry_time;
+
+    free_slot.status = "reserved";
+    vehicles_file
+        << vehicle1.name
+        << "\t" << vehicle1.slotID
+        << "\t" << vehicle1.vehicle_brand
+        << "\t" << vehicle1.plate_number
+        << "\t" << vehicle1.phone_num << endl;
+
+    vehicles_file.close();
+    cout << "You have successfully Reserved a parking slot, with ID: " << vehicle1.slotID << endl;
+};
+
+// finds the reserved slot for the vehicle owner by using slot ID
+void reserve_finder()
+{
+    int slot_id, vh_type, index;
+    cout << "Enter slot ID: ";
+    cin >> slot_id;
+    cout << "Enter your vehicle size: \n";
+    cout << "1. Light weight (upto 4500 Kg) :\n";
+    cout << "2. Heavy weight (4500+ kg): \n";
+    cout << "3. Very Light (Motorbikes, Three wheeled): \n";
+    cout << "Your choice: ";
+    cin >> vh_type;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (parking_slots[vh_type - 1][i].status == "reserved" && parking_slots[vh_type - 1][i].slot_id == slot_id)
+        {
+            index = 0;
+            cout << "Slot found ! \nPlease go to your slot." <<endl;
+            parking_slots[vh_type - 1][i].status == "occupied";
+            return;
+        }
+    }
+    cout << "Sorry Slot ID not found\n";
+};
 
 // this function finds and returns the vehicle owner in the slots.
 vehicle_owner find_vehicle_owner(int slot_id)
@@ -168,7 +255,8 @@ vehicle_owner find_vehicle_owner(int slot_id)
     {
         for (int j = 0; j < n; j++)
         {
-            if(parking_slots[i][j].slot_id==slot_id){
+            if (parking_slots[i][j].slot_id == slot_id)
+            {
                 parking_slots[i][j].status = "free";
                 return parking_slots[i][j].owner;
             }
@@ -258,11 +346,11 @@ void exiting_vehicles()
 
     vehicle_owner owner;
     owner = find_vehicle_owner(slot);
-    cout << owner.name <<endl;
+    cout << owner.name << endl;
 
     price = rate[owner.vh_type] * (exit_time - owner.entry_time);
 
-    transaction << owner.name << "\t" << owner.slotID << "\t" << owner.entry_time << "\t" << exit_time <<endl;
+    transaction << owner.name << "\t" << owner.slotID << "\t" << owner.entry_time << "\t" << exit_time << endl;
     cout << "Transaction successfully done !\n";
 
     transaction.close();
