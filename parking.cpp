@@ -6,7 +6,6 @@ using namespace std;
 
 fstream file;
 int tryal = 0;
-bool create_slot = false;
 double rate[] = {0.004, 0.08, 0.009};
 
 struct attendant_info
@@ -34,17 +33,52 @@ public:
 const int n = 10;
 parking parking_slots[3][n];
 
-void create_parking_slots()
+void exit_program()
 {
-    int slot_ = 1;
+    ofstream slots("slots.dat", ios::binary);
+    if (!slots)
+    {
+        cout << "\nError on writing slots.\n";
+        return;
+    }
+
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            parking_slots[i][j].slot_id = slot_;
-            slot_++;
+            slots.write((char *)(&parking_slots[i][j]), sizeof(parking_slots[i][j]));
         }
     }
+
+    slots.close();
+    exit(0);
+};
+
+void create_parking_slots()
+{
+    ifstream slots("slots.dat", ios::binary);
+    if (!slots)
+    {
+        int slot = 1;
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                parking_slots[i][j].slot_id = slot;
+                slot++;
+            }
+        }
+        return;
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            slots.read((char *)(&parking_slots[i][j]), sizeof(parking_slots[i][j]));
+            cout << "Loaded slot: " << parking_slots[i][j].slot_id << endl;
+        }
+    }
+    slots.close();
 };
 
 // Read and display files.
@@ -146,7 +180,7 @@ void err()
     if (tryal > 4)
     {
         cout << "Too many invalid inputs!\nProgram is terminating!\n";
-        exit(0);
+        exit_program();
     }
     else
     {
@@ -203,6 +237,7 @@ int get_free_parking_slot(int type_vh)
 {
     for (int i = 0; i < n; i++)
     {
+        cout << "Loading : " << i + 1 << endl;
         if (parking_slots[type_vh][i].status == "free")
         {
             return i;
@@ -401,8 +436,10 @@ vehicle_type_input:
 
     cout << "Enter your phone number: \n";
     cin >> vehicle1.phone_num;
-
+    cout << "Gets here 1\n";
     int free_slot = get_free_parking_slot(vh_type);
+    cout << "Gets here 2\n";
+
     if (free_slot == -1)
     {
         return;
@@ -436,7 +473,7 @@ void exiting_vehicles()
     if (!transaction || !vehicles)
     {
         cout << "Error opening the file !" << endl;
-        exit(0);
+        return;
     }
 
     int slot;
@@ -522,11 +559,7 @@ vo_input:
 
 int main()
 {
-    if (!create_slot)
-    {
-        create_parking_slots();
-        create_slot = true;
-    }
+    create_parking_slots();
 
     // menu:
     int choice1 = 1;
@@ -540,7 +573,7 @@ int main()
         else
         {
             cout << "Exiting the program; have a nice day!" << endl;
-            exit(0);
+            exit_program();
         }
     } while (choice1 != 3);
 }
