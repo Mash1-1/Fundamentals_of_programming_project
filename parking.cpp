@@ -435,9 +435,8 @@ vehicle_type_input:
 
     cout << "Enter your phone number: \n";
     cin >> vehicle1.phone_num;
-    cout << "Gets here 1\n";
+    
     int free_slot = get_free_parking_slot(vh_type);
-    cout << "Gets here 2\n";
 
     if (free_slot == -1)
     {
