@@ -16,8 +16,8 @@ struct attendant_info
 
 struct vehicle_owner
 {
-    string name = "--", vehicle_brand, plate_number, phone_num;
-    int slotID, vh_type;
+    string name = "--", vehicle_brand = "None", plate_number = "None", phone_num = "None";
+    int slotID, vh_type = 0;
     long long int entry_time = 0;
 };
 
@@ -25,7 +25,7 @@ class parking
 {
 public:
     string status = "free";
-    int slot_id, vehicle_type;
+    int slot_id, vehicle_type = 0;
     vehicle_owner owner;
 };
 
@@ -35,7 +35,7 @@ parking parking_slots[3][n];
 
 void exit_program()
 {
-    ofstream slots("slots.dat", ios::binary);
+    ofstream slots("slots.txt");
     if (!slots)
     {
         cout << "\nError on writing slots.\n";
@@ -46,7 +46,10 @@ void exit_program()
     {
         for (int j = 0; j < n; j++)
         {
-            slots.write((char *)(&parking_slots[i][j]), sizeof(parking_slots[i][j]));
+            slots << parking_slots[i][j].slot_id << " " << parking_slots[i][j].owner.slotID << " " << parking_slots[i][j].owner.name
+                  << " " << parking_slots[i][j].owner.entry_time << " " << parking_slots[i][j].owner.phone_num << " " << parking_slots[i][j].owner.plate_number
+                  << " " << parking_slots[i][j].owner.vehicle_brand << " " << parking_slots[i][j].owner.vh_type
+                  << " " << parking_slots[i][j].vehicle_type << " " << parking_slots[i][j].status << endl;
         }
     }
 
@@ -56,7 +59,7 @@ void exit_program()
 
 void create_parking_slots()
 {
-    ifstream slots("slots.dat", ios::binary);
+    ifstream slots("slots.txt");
     if (!slots)
     {
         cout << "Program opening for the first time!\nLoading Parking slot ids.\n";
@@ -71,11 +74,22 @@ void create_parking_slots()
         }
         return;
     }
-    for (int i = 0; i < 3; i++)
+
+    int i = 0, j = 0;
+    parking park;
+    while (slots >> park.slot_id >> park.owner.slotID >> park.owner.name >> park.owner.entry_time >> park.owner.phone_num >> park.owner.plate_number >> park.owner.vehicle_brand >> park.owner.vh_type >> park.vehicle_type >> park.status)
     {
-        for (int j = 0; j < n; j++)
+        parking_slots[i][j] = park;
+        cout << park.slot_id << i << j << endl;
+        j++;
+        if (j == n)
         {
-            slots.read((char *)(&parking_slots[i][j]), sizeof(parking_slots[i][j]));
+            j = 0;
+            i++;
+            if (i > 2)
+            {
+                break;
+            }
         }
     }
     slots.close();
@@ -237,6 +251,7 @@ int get_free_parking_slot(int type_vh)
 {
     for (int i = 0; i < n; i++)
     {
+        cout << parking_slots[type_vh][i].slot_id << endl;
         if (parking_slots[type_vh][i].status == "free")
         {
             return i;
@@ -435,7 +450,7 @@ vehicle_type_input:
 
     cout << "Enter your phone number: \n";
     cin >> vehicle1.phone_num;
-    
+
     int free_slot = get_free_parking_slot(vh_type);
 
     if (free_slot == -1)
