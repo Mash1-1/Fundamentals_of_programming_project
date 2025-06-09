@@ -19,7 +19,7 @@ struct vehicle_owner
 {
     string name = "--", vehicle_brand, plate_number, phone_num;
     int slotID, vh_type;
-    long long int entry_time;
+    long long int entry_time = 0;
 };
 
 class parking
@@ -69,6 +69,18 @@ void display(int choice)
     break;
     case 2:
     {
+        ifstream vehicles_file("vehicles.txt", ios::in);
+        vehicle_owner vehicle1;
+        cout << "\nName\tSlot ID\t\tVehicle Brand\tPlate number\tPhone Number\n";
+        while (vehicles_file >> vehicle1.name >> vehicle1.slotID >> vehicle1.vehicle_brand >> vehicle1.plate_number >> vehicle1.phone_num)
+        {
+            cout << vehicle1.name << "\t" << vehicle1.slotID
+                 << "\t\t" << vehicle1.vehicle_brand
+                 << "\t" << vehicle1.plate_number
+                 << "\t\t" << vehicle1.phone_num << endl;
+        }
+
+        vehicles_file.close();
     }
     break;
     case 3:
@@ -80,7 +92,8 @@ void display(int choice)
             break;
         }
         string name;
-        int slotID, price, entry_time, exit_time;
+        int slotID, entry_time, exit_time;
+        double price;
 
         cout << "\nTransaction History:\n\n";
         cout << "Name\tSlotID\tPrice Payed($)\n";
@@ -198,14 +211,6 @@ int get_free_parking_slot(int type_vh)
     cout << "No parking slots available currently!\n";
     cout << "Please come back later.\n";
     return -1;
-};
-
-// Gets the current time as a string to store.
-void check_time(char time1[6])
-{
-    auto global_time = time(nullptr);
-    tm *local_time = localtime(&global_time);
-    strftime(time1, 6, "%H:%M", local_time);
 };
 
 void register_attendant();
@@ -356,7 +361,7 @@ void find_vehicle_owner(int slotid, vehicle_owner *owner)
 // Entering vehicles' menu and operation
 void entering_vehicle()
 {
-    auto entry_time = time(nullptr);
+    long long entry_time = time(nullptr);
     int vh_type;
 
     vehicle_owner vehicle1;
@@ -402,10 +407,10 @@ vehicle_type_input:
     {
         return;
     }
-    parking_slots[vh_type][free_slot].owner = vehicle1;
-
     vehicle1.slotID = parking_slots[vh_type][free_slot].slot_id;
     vehicle1.entry_time = entry_time;
+
+    parking_slots[vh_type][free_slot].owner = vehicle1;
     parking_slots[vh_type][free_slot].status = "Occupied";
 
     vehicles_file
@@ -445,9 +450,7 @@ void exiting_vehicles()
         cout << "No vehicle owner in this slot!\n";
         return;
     }
-    cout << owner.name << "\t" << owner.entry_time << endl;
     price = rate[owner.vh_type] * (exit_time - owner.entry_time);
-    cout << "Exit time: " << exit_time << "\t" << "Entry time: " << owner.entry_time << endl;
 pay:
     int choice;
     cout << "Hello " << owner.name << "!" << endl;
@@ -705,7 +708,7 @@ void attendant_action(string email)
         cout << "What would you like to do today: \n\n";
 
         cout << "1. Display Parking Slot info.\n";
-        cout << "2. Display history of entry and exit.\n";
+        cout << "2. Display all vehicles history.\n";
         cout << "3. Search and display vehicle owner information.\n";
         cout << "4. Display transaction history.\n";
         cout << "5. Unreserve a reserved parking slot.\n";
@@ -755,7 +758,7 @@ void attendant_action(string email)
                     cout << tmp.name << "\t"
                          << tmp.slotID
                          << "\t\t" << tmp.vehicle_brand
-                         << "\t\t" << tmp.plate_number
+                         << "\t" << tmp.plate_number
                          << "\t\t" << tmp.phone_num << endl;
                     found = true;
                 }
@@ -877,9 +880,7 @@ a:
 };
 
 /* Unsolved Problems:
-    - Entry time not stored properly!
-        - Entry and exit display doesn't work. (Att_act --> choice 2)
-    - Slot generation doesn't work through exiting program. 
+    - Slot generation doesn't work through exiting program.
         * use file to read from it every time program starts.
         * make program never exit.
 */
