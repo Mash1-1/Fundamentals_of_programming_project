@@ -33,6 +33,17 @@ public:
 const int n = 10;
 parking parking_slots[3][n];
 
+void welcome()
+{
+    cout << "       ____________  ____     ____      ______       ___        _______      __   __   ________   ___      __       _____\n";
+    cout << "     /  __________/ /    |   /    |    |   _  \\     /   \\      |   ___  \\   |  | /  / |__    __| |    \\   |  |    /  ____|\n";
+    cout << "    /  /____       /     |  /     |    |  | \\  |   /  _  \\     |  |   \\  \\  |  |/  /     |  |    |     \\  |  |   /  /\n";
+    cout << "   /______  \\     /  /|  | /  /|  |    |  |_/  |  /  /_\\  \\    |  |___/  /  |     /      |  |    |  |\\  \\ |  |  |  |    __\n";
+    cout << "          \\  \\   /  / |  |/  / |  |    |   ___/  /  ____   \\   |   ___  \\   |     \\      |  |    |  | \\  \\|  |  |  |___|  |\n";
+    cout << " _________/  /  /  /  |_____/  |  |    |  |     /  /     \\  \\  |  |   \\  \\  |  |\\  \\   __|  |__  |  |  \\     |   \\       /\n";
+    cout << "/___________/  /__/            |__|    |__|    /__/       \\__\\ |__|    \\__\\ |__| \\__\\ |________| |__|   \\____|    \\_____/\n";
+};
+
 void exit_program()
 {
     ofstream slots("slots.txt");
@@ -80,7 +91,6 @@ void create_parking_slots()
     while (slots >> park.slot_id >> park.owner.slotID >> park.owner.name >> park.owner.entry_time >> park.owner.phone_num >> park.owner.plate_number >> park.owner.vehicle_brand >> park.owner.vh_type >> park.vehicle_type >> park.status)
     {
         parking_slots[i][j] = park;
-        cout << park.slot_id << i << j << endl;
         j++;
         if (j == n)
         {
@@ -572,6 +582,7 @@ vo_input:
 
 int main()
 {
+    welcome();
     create_parking_slots();
 
     // menu:
@@ -924,9 +935,3 @@ a:
         file.close();
     }
 };
-
-/* Unsolved Problems:
-    - Slot generation doesn't work through exiting program.
-        * use file to read from it every time program starts.
-        * make program never exit.
-*/
