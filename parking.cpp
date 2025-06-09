@@ -59,6 +59,7 @@ void create_parking_slots()
     ifstream slots("slots.dat", ios::binary);
     if (!slots)
     {
+        cout << "Program opening for the first time!\nLoading Parking slot ids.\n";
         int slot = 1;
         for (int i = 0; i < 3; i++)
         {
@@ -75,7 +76,6 @@ void create_parking_slots()
         for (int j = 0; j < n; j++)
         {
             slots.read((char *)(&parking_slots[i][j]), sizeof(parking_slots[i][j]));
-            cout << "Loaded slot: " << parking_slots[i][j].slot_id << endl;
         }
     }
     slots.close();
@@ -237,7 +237,6 @@ int get_free_parking_slot(int type_vh)
 {
     for (int i = 0; i < n; i++)
     {
-        cout << "Loading : " << i + 1 << endl;
         if (parking_slots[type_vh][i].status == "free")
         {
             return i;
