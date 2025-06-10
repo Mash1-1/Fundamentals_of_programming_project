@@ -134,7 +134,7 @@ void display(int choice)
         {
             cout << vehicle1.name << "\t" << vehicle1.slotID
                  << "\t\t" << vehicle1.vehicle_brand
-                 << "\t" << vehicle1.plate_number
+                 << "\t\t" << vehicle1.plate_number
                  << "\t\t" << vehicle1.phone_num << endl;
         }
 
@@ -327,9 +327,9 @@ vehicle_type_input:
     {
         return;
     }
+    vehicle1.entry_time = entry_time;
     parking_slots[vh_type][free_slot].owner = vehicle1;
     vehicle1.slotID = parking_slots[vh_type][free_slot].slot_id;
-    vehicle1.entry_time = entry_time;
 
     parking_slots[vh_type][free_slot].status = "reserved";
     vehicles_file
@@ -353,7 +353,10 @@ void unreserve(int slotID)
         {
             if (parking_slots[i][j].slot_id == slotID && parking_slots[i][j].status == "reserved")
             {
-                parking_slots[i][j].status = "free";
+                parking new_p;
+                int tmp = parking_slots[i][j].slot_id;
+                parking_slots[i][j] = new_p;
+                parking_slots[i][j].slot_id = tmp;
                 cout << "\nSuccessfully Unreserved Slot!\n";
                 found = true;
             }
@@ -386,7 +389,7 @@ void reserve_finder()
             index = 0;
             cout << "Slot found! Hello " << parking_slots[vh_type - 1][i].owner.name << "!\n";
             cout << "Please go to your slot." << endl;
-            parking_slots[vh_type - 1][i].status = "occupied";
+            parking_slots[vh_type - 1][i].status = "Occupied";
             valid = true;
             break;
         }
@@ -406,11 +409,14 @@ void find_vehicle_owner(int slotid, vehicle_owner *owner)
         {
             if (parking_slots[i][j].slot_id == slotid)
             {
-                parking_slots[i][j].status = "free";
                 owner->name = parking_slots[i][j].owner.name;
                 owner->entry_time = parking_slots[i][j].owner.entry_time;
                 owner->slotID = parking_slots[i][j].slot_id;
                 owner->vh_type = parking_slots[i][j].owner.vh_type;
+                int tmp = parking_slots[i][j].slot_id;
+                parking new_p;
+                parking_slots[i][j] = new_p;
+                parking_slots[i][j].slot_id = tmp;
                 return;
             }
         }
@@ -815,7 +821,7 @@ void attendant_action(string email)
                     cout << tmp.name << "\t"
                          << tmp.slotID
                          << "\t\t" << tmp.vehicle_brand
-                         << "\t" << tmp.plate_number
+                         << "\t\t  " << tmp.plate_number
                          << "\t\t" << tmp.phone_num << endl;
                     found = true;
                 }
